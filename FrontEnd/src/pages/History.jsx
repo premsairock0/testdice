@@ -6,15 +6,19 @@ export default function History() {
 
   useEffect(() => {
     const fetchHistory = async () => {
-      const res = await API.get("/dice/history");
-      setGames(res.data);
+      try {
+        const res = await API.get("/dice/history");
+        setGames(res.data);
+      } catch (err) {
+        console.error("History fetch failed", err);
+      }
     };
     fetchHistory();
   }, []);
 
   return (
     <div>
-      <h2>Balance Sheet</h2>
+      <h2>Last 10 Dice Games</h2>
       <table border="1">
         <thead>
           <tr>

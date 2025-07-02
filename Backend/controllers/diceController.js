@@ -16,17 +16,25 @@ const rollDice = async (req, res) => {
       return res.status(400).json({ message: "Insufficient balance" });
     }
 
-    const rolled = Math.floor(Math.random() * 100) + 1;
+    // 🎲 Roll between 0.00 and 100.00
+    const rolled = parseFloat((Math.random() * 100).toFixed(2));
+
+    // 🎯 Decide if user wins
     const win = over ? rolled > target : rolled < target;
 
-    const payout = win ? bet * 2 : 0;
-    const updatedCoins = user.coins - bet + payout;
+    // 💰 Calculate payout ratio like Stake
+    let payout = 0;
+    if (win) {
+      payout = over
+        ? parseFloat((bet * (100 / (100 - target))).toFixed(2))
+        : parseFloat((bet * (100 / target)).toFixed(2));
+    }
 
-    // ✅ Update user coins
-    user.coins = updatedCoins;
+    // 🪙 Update coins
+    user.coins = user.coins - bet + payout;
     await user.save();
 
-    // ✅ Save game history
+    // 📦 Save game history
     const game = new DiceGame({
       userId: req.user.id,
       bet,
@@ -40,6 +48,7 @@ const rollDice = async (req, res) => {
 
     await game.save();
 
+    // ✅ Send response
     res.json({
       rolled,
       win,
